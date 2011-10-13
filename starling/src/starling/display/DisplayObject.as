@@ -11,6 +11,7 @@
 package starling.display
 {
     import flash.geom.Matrix;
+    import flash.geom.Matrix3D;
     import flash.geom.Point;
     import flash.geom.Rectangle;
     import flash.utils.getQualifiedClassName;
@@ -97,7 +98,7 @@ package starling.display
     public class DisplayObject extends EventDispatcher
     {
         // members
-        
+        protected var mMvpCopy:Matrix3D;
         private var mX:Number;
         private var mY:Number;
         private var mPivotX:Number;
@@ -118,7 +119,8 @@ package starling.display
         {
             if (getQualifiedClassName(this) == "starling.display::DisplayObject")
                 throw new AbstractClassError();
-            
+
+			mMvpCopy = new Matrix3D();
             mX = mY = mPivotX = mPivotY = mRotation = 0.0;
             mScaleX = mScaleY = mAlpha = 1.0;            
             mVisible = mTouchable = true;

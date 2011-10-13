@@ -37,6 +37,7 @@ package starling.display
         private var mMipMapping:Boolean;
 		
 		private var mAlphaVector:Vector.<Number>;
+		private var mMvpCopy:Matrix3D;
 		private var mProgram:Program3D;
 		
         public function QuadGroup(texture:TextureBase, smoothing:String, repeat:Boolean, 
@@ -49,6 +50,7 @@ package starling.display
             mRepeat = repeat;
             mMipMapping = mipmap;
 			mAlphaVector = new Vector.<Number>(4, true);
+			mMvpCopy = new Matrix3D();
 			
 			setupProgram();
         }
@@ -110,7 +112,9 @@ package starling.display
             context.setProgram(mProgram);
             context.setVertexBufferAt(0, mVertexBuffer, VertexData.POSITION_OFFSET, Context3DVertexBufferFormat.FLOAT_3); 
             context.setVertexBufferAt(1, mVertexBuffer, VertexData.COLOR_OFFSET,    Context3DVertexBufferFormat.FLOAT_4);
-            context.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, support.mvpMatrix, true);            
+			
+			support.getMvpMatrixCopy(mMvpCopy);
+            context.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, mMvpCopy, true);            
             context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 0, mAlphaVector, 1);
             
             if (mTexture)
