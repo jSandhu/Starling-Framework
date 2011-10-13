@@ -35,6 +35,8 @@ package starling.display
         private var mSmoothing:String;
         private var mRepeat:Boolean;
         private var mMipMapping:Boolean;
+		
+		private var mProgram:Program3D;
         
         public function QuadGroup(texture:TextureBase, smoothing:String, repeat:Boolean, 
                                   mipmap:Boolean, premultipliedAlpha:Boolean)
@@ -45,7 +47,17 @@ package starling.display
             mSmoothing = smoothing;
             mRepeat = repeat;
             mMipMapping = mipmap;
+			
+			setupProgram();
         }
+		
+		private function setupProgram():void
+		{
+			var program:String = mTexture ? 
+				Image.getProgramName(mMipMapping, mRepeat, mSmoothing) : Quad.PROGRAM_NAME;
+			
+			mProgram = Starling.current.getProgram(program);
+		}
         
         public function dispose():void
         {
@@ -81,14 +93,13 @@ package starling.display
             if (context == null) throw new MissingContextError();
             
             var pma:Boolean = mVertexData.premultipliedAlpha;
-            var program:String = mTexture ? 
-                Image.getProgramName(mMipMapping, mRepeat, mSmoothing) : Quad.PROGRAM_NAME;
+            
             var alphaVector:Vector.<Number> = pma ? new <Number>[alpha, alpha, alpha, alpha] : 
                                                     new <Number>[1.0, 1.0, 1.0, alpha];
             
             support.setDefaultBlendFactors(pma);
             
-            context.setProgram(Starling.current.getProgram(program));
+            context.setProgram(mProgram);
             context.setVertexBufferAt(0, mVertexBuffer, VertexData.POSITION_OFFSET, Context3DVertexBufferFormat.FLOAT_3); 
             context.setVertexBufferAt(1, mVertexBuffer, VertexData.COLOR_OFFSET,    Context3DVertexBufferFormat.FLOAT_4);
             context.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, support.mvpMatrix, true);            
