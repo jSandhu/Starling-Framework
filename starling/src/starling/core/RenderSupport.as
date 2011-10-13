@@ -31,6 +31,9 @@ package starling.core
         private var mProjectionMatrix:Matrix3D;
         private var mModelViewMatrix:Matrix3D;        
         private var mMatrixStack:Vector.<Matrix3D>;
+		
+		private var mUsingPMA:Boolean = false;
+		private var mBlendModeInitialized:Boolean = false;		
         
         // construction
         
@@ -136,10 +139,16 @@ package starling.core
         /** Sets up the default blending factors, depending on the premultiplied alpha status. */
         public function setDefaultBlendFactors(premultipliedAlpha:Boolean):void
         {
+			if (mBlendModeInitialized && (premultipliedAlpha == mUsingPMA))
+				return;
+			
             var destFactor:String = Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA;
             var sourceFactor:String = premultipliedAlpha ? Context3DBlendFactor.ONE :
                                                            Context3DBlendFactor.SOURCE_ALPHA;
             Starling.context.setBlendFactors(sourceFactor, destFactor);
+			
+			mUsingPMA = premultipliedAlpha;
+			mBlendModeInitialized = true;
         }
         
         /** Clears the render context with a certain color and alpha value. */

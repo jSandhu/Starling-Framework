@@ -36,8 +36,9 @@ package starling.display
         private var mRepeat:Boolean;
         private var mMipMapping:Boolean;
 		
+		private var mAlphaVector:Vector.<Number>;
 		private var mProgram:Program3D;
-        
+		
         public function QuadGroup(texture:TextureBase, smoothing:String, repeat:Boolean, 
                                   mipmap:Boolean, premultipliedAlpha:Boolean)
         {
@@ -47,6 +48,7 @@ package starling.display
             mSmoothing = smoothing;
             mRepeat = repeat;
             mMipMapping = mipmap;
+			mAlphaVector = new Vector.<Number>(4, true);
 			
 			setupProgram();
         }
@@ -94,8 +96,14 @@ package starling.display
             
             var pma:Boolean = mVertexData.premultipliedAlpha;
             
-            var alphaVector:Vector.<Number> = pma ? new <Number>[alpha, alpha, alpha, alpha] : 
-                                                    new <Number>[1.0, 1.0, 1.0, alpha];
+			if (pma)
+			{
+				mAlphaVector[0] = alpha; mAlphaVector[1] = alpha; mAlphaVector[2] = alpha; mAlphaVector[3] = alpha;
+			}
+			else
+			{
+				mAlphaVector[0] = 1; mAlphaVector[1] = 1; mAlphaVector[2] = 1; mAlphaVector[3] = alpha;
+			}
             
             support.setDefaultBlendFactors(pma);
             
@@ -103,7 +111,7 @@ package starling.display
             context.setVertexBufferAt(0, mVertexBuffer, VertexData.POSITION_OFFSET, Context3DVertexBufferFormat.FLOAT_3); 
             context.setVertexBufferAt(1, mVertexBuffer, VertexData.COLOR_OFFSET,    Context3DVertexBufferFormat.FLOAT_4);
             context.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, support.mvpMatrix, true);            
-            context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 0, alphaVector, 1);
+            context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 0, mAlphaVector, 1);
             
             if (mTexture)
             {
