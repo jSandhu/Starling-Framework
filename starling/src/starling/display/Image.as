@@ -22,6 +22,7 @@ package starling.display
     import starling.core.RenderSupport;
     import starling.core.Starling;
     import starling.errors.MissingContextError;
+    import starling.textures.SubTexture;
     import starling.textures.Texture;
     import starling.textures.TextureSmoothing;
     import starling.utils.VertexData;
@@ -45,8 +46,10 @@ package starling.display
     public class Image extends Quad
     {
         private var mTexture:Texture;
+		private var mTextureAsSubTexture:SubTexture;
         private var mSmoothing:String;
-        
+		private var mAdjustedVertexData:VertexData;
+		
         /** Creates a quad with a texture mapped onto it. */
         public function Image(texture:Texture)
         {
@@ -63,7 +66,11 @@ package starling.display
                 mVertexData.setTexCoords(1, 1.0, 0.0);
                 mVertexData.setTexCoords(2, 0.0, 1.0);
                 mVertexData.setTexCoords(3, 1.0, 1.0);
+				
+				mAdjustedVertexData = mVertexData.clone();
+				
                 mTexture = texture;
+				mTextureAsSubTexture = mTexture as SubTexture;
                 mSmoothing = TextureSmoothing.BILINEAR;
             }
             else
@@ -99,10 +106,48 @@ package starling.display
         
         /** Returns a 'VertexData' object with the raw data of the object required for rendering.
          *  The texture coordinates are already in their refined format. */ 
-        public override function get vertexData():VertexData
-        {
-            return mTexture.adjustVertexData(mVertexData);
-        }
+		override public function get vertexData():VertexData {
+			var sourceData:Vector.<Number> = mVertexData.data;
+			var destData:Vector.<Number> = mAdjustedVertexData.data;
+			var len:uint = sourceData.length;
+			var i:uint;
+			
+			for (i = 0; i < len; i++) {
+				destData[i] = sourceData[i];
+			}
+			
+			var frame:Rectangle = mTexture.frame;
+			if (frame)
+			{
+				var deltaRight:Number  = frame.width  + frame.x - mTexture.width;
+				var deltaBottom:Number = frame.height + frame.y - mTexture.height;
+				  
+				destData[0] += -frame.x;
+				destData[1] += -frame.y;
+				
+				destData[9] += -deltaRight;
+				destData[10] += -frame.y;
+				
+				destData[18] += -frame.x;
+				destData[19] += -deltaBottom;
+				
+				destData[27] += -deltaRight;
+				destData[28] += -deltaBottom;
+			}
+			
+			if (mTextureAsSubTexture) {
+				var numVertices:int = mVertexData.numVertices;
+				var mRootClipping:Rectangle = mTextureAsSubTexture.rootClipping; 
+				
+				for (i = 0; i<numVertices; ++i) {	
+					// set texture coordinates
+					destData[i * 9 + 7]	= mRootClipping.x + sourceData[i * 9 + 7] * mRootClipping.width
+					destData[i * 9 + 8]	= mRootClipping.y + sourceData[i * 9 + 8] * mRootClipping.height
+				}			
+			}
+			
+			return mAdjustedVertexData;
+		}
         
         /** The texture that is displayed on the quad. */
         public function get texture():Texture { return mTexture; }
@@ -115,6 +160,7 @@ package starling.display
             else if (value != mTexture)
             {
                 mTexture = value;
+				mTextureAsSubTexture = mTexture as SubTexture;
                 mVertexData.premultipliedAlpha = mTexture.premultipliedAlpha;
                 if (mVertexBuffer) createVertexBuffer();
             }
@@ -145,8 +191,17 @@ package starling.display
             if (mVertexBuffer == null) createVertexBuffer();
             if (mIndexBuffer  == null) createIndexBuffer();
             
-            var alphaVector:Vector.<Number> = pma ? new <Number>[alpha, alpha, alpha, alpha] :
-                                                    new <Number>[1.0, 1.0, 1.0, alpha];
+			var alphaVect:Vector.<Number>;
+			if (pma)
+			{
+				alphaVect = mAlphaVector;
+				alphaVect[0] = alpha; alphaVect[1] = alpha; alphaVect[2] = alpha; alphaVect[3] = alpha;
+			}
+			else
+			{
+				alphaVect = mFullAlphaVector;
+			}
+
             support.setDefaultBlendFactors(pma);
             
             context.setProgram(Starling.current.getProgram(programName));
@@ -157,7 +212,7 @@ package starling.display
 			
 			support.getMvpMatrixCopy(mMvpCopy);
             context.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, mMvpCopy, true);            
-            context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 0, alphaVector, 1);
+            context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 0, alphaVect, 1);
             context.drawTriangles(mIndexBuffer, 0, 2);
             
             context.setTextureAt(1, null);

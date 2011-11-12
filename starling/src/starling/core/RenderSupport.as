@@ -30,7 +30,7 @@ package starling.core
         
         private var mProjectionMatrix:Matrix3D;
         private var mModelViewMatrix:Matrix3D;        
-        private var mMatrixStack:Vector.<Matrix3D>;
+        private var mMatrixStack:MatrixStack;
 		
 		private var mUsingPMA:Boolean = false;
 		private var mBlendModeInitialized:Boolean = false;	
@@ -42,7 +42,7 @@ package starling.core
         /** Creates a new RenderSupport object with an empty matrix stack. */
         public function RenderSupport()
         {
-            mMatrixStack = new <Matrix3D>[];
+            mMatrixStack = new MatrixStack();
             mProjectionMatrix = new Matrix3D();
             mModelViewMatrix = new Matrix3D();
 			mMvpCopy = new Matrix3D();
@@ -106,13 +106,13 @@ package starling.core
         /** Pushes the current modelview matrix to a stack from which it can be restored later. */
         public function pushMatrix():void
         {
-            mMatrixStack.push(mModelViewMatrix.clone());
+            mMatrixStack.pushCopy(mModelViewMatrix);
         }
         
         /** Restores the modelview matrix that was last pushed to the stack. */
         public function popMatrix():void
         {
-            mModelViewMatrix = mMatrixStack.pop();
+            mMatrixStack.popCopy(mModelViewMatrix);
 			mModelViewDirty = true;
         }
         
@@ -120,7 +120,7 @@ package starling.core
         public function resetMatrix():void
         {
             if (mMatrixStack.length != 0)
-                mMatrixStack = new <Matrix3D>[];
+                mMatrixStack.reset();
             
             loadIdentity();
         }

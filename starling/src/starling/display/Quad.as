@@ -168,7 +168,7 @@ package starling.display
         {
             alpha *= this.alpha;
             
-            var alphaVector:Vector.<Number> = new <Number>[alpha, alpha, alpha, alpha];
+			mAlphaVector[0] = alpha; mAlphaVector[1] = alpha; mAlphaVector[2] = alpha; mAlphaVector[3] = alpha;
             var context:Context3D = Starling.context;
             
             if (context == null) throw new MissingContextError();
@@ -183,7 +183,7 @@ package starling.display
 			
 			support.getMvpMatrixCopy(mMvpCopy);
             context.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, mMvpCopy, true);            
-            context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 0, alphaVector, 1);
+            context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 0, mAlphaVector, 1);
             context.drawTriangles(mIndexBuffer, 0, 2);
             
             context.setVertexBufferAt(0, null);

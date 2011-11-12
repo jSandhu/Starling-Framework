@@ -26,6 +26,9 @@ package starling.textures
         private var mParent:Texture;
         private var mClipping:Rectangle;
         private var mRootClipping:Rectangle;
+		
+		private var mWidth:Number = 0;
+		private var mHeight:Number = 0;
         
         /** Creates a new subtexture containing the specified region (in pixels) of a parent 
          *  texture. */
@@ -36,6 +39,9 @@ package starling.textures
                                           region.y / parentTexture.height,
                                           region.width / parentTexture.width,
                                           region.height / parentTexture.height);
+			
+			mWidth = mParent.width * mClipping.width;
+			mHeight = mParent.height * mClipping.height;
         }
         
         /** @inheritDoc */
@@ -80,21 +86,26 @@ package starling.textures
                 mRootClipping.height *= parentClipping.height;
                 parentTexture = parentTexture.mParent as SubTexture;
             }
+			
+			mWidth = mParent.width * mClipping.width;
+			mHeight = mParent.height * mClipping.height;
         }
         
         /** @inheritDoc */
         public override function get base():TextureBase { return mParent.base; }
         
         /** @inheritDoc */
-        public override function get width():Number { return mParent.width * mClipping.width; }
-        
+        public override function get width():Number { return mWidth; }
+		
         /** @inheritDoc */
-        public override function get height():Number { return mParent.height * mClipping.height; }
+        public override function get height():Number { return mHeight; }
         
         /** @inheritDoc */
         public override function get mipMapping():Boolean { return mParent.mipMapping; }
         
         /** @inheritDoc */
         public override function get premultipliedAlpha():Boolean { return mParent.premultipliedAlpha; }
+		
+		public function get rootClipping():Rectangle { return mRootClipping };
     }
 }

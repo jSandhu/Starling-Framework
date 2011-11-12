@@ -82,13 +82,13 @@ package starling.utils
         /** Updates the position values of a vertex. */
         public function setPosition(vertexID:int, x:Number, y:Number, z:Number=0.0):void
         {
-            setValues(getOffset(vertexID) + POSITION_OFFSET, x, y, z);
+            setValues( vertexID * ELEMENTS_PER_VERTEX + POSITION_OFFSET, x, y, z);
         }
         
         /** Returns the position of a vertex. */
         public function getPosition(vertexID:int):Vector3D
         {
-            var offset:int = getOffset(vertexID) + POSITION_OFFSET;
+            var offset:int =  vertexID * ELEMENTS_PER_VERTEX + POSITION_OFFSET;
             return new Vector3D(mData[offset], mData[offset+1], mData[offset+2]);
         }
         
@@ -96,7 +96,7 @@ package starling.utils
         public function setColor(vertexID:int, color:uint, alpha:Number=1.0):void
         {
             var multiplier:Number = mPremultipliedAlpha ? alpha : 1.0;
-            setValues(getOffset(vertexID) + COLOR_OFFSET, 
+            setValues( vertexID * ELEMENTS_PER_VERTEX + COLOR_OFFSET, 
                       Color.getRed(color)   / 255.0 * multiplier,
                       Color.getGreen(color) / 255.0 * multiplier,
                       Color.getBlue(color)  / 255.0 * multiplier,
@@ -106,7 +106,7 @@ package starling.utils
         /** Returns the RGB color of a vertex (no alpha). */
         public function getColor(vertexID:int):uint
         {
-            var offset:int = getOffset(vertexID) + COLOR_OFFSET;
+            var offset:int =  vertexID * ELEMENTS_PER_VERTEX + COLOR_OFFSET;
             var divisor:Number = mPremultipliedAlpha ? mData[offset+3] : 1.0;
             
             if (divisor == 0) return 0;
@@ -125,7 +125,7 @@ package starling.utils
             if (mPremultipliedAlpha) setColor(vertexID, getColor(vertexID), alpha);
             else 
             {
-                var offset:int = getOffset(vertexID) + COLOR_OFFSET + 3;
+                var offset:int = vertexID * ELEMENTS_PER_VERTEX + COLOR_OFFSET + 3;
                 mData[offset] = alpha;
             }
         }
@@ -133,20 +133,20 @@ package starling.utils
         /** Returns the alpha value of a vertex in the range 0-1. */
         public function getAlpha(vertexID:int):Number
         {
-            var offset:int = getOffset(vertexID) + COLOR_OFFSET + 3;
+            var offset:int = vertexID * ELEMENTS_PER_VERTEX + COLOR_OFFSET + 3;
             return mData[offset];
         }
         
         /** Updates the texture coordinates of a vertex (range 0-1). */
         public function setTexCoords(vertexID:int, u:Number, v:Number):void
         {
-            setValues(getOffset(vertexID) + TEXCOORD_OFFSET, u, v);
+            setValues(vertexID * ELEMENTS_PER_VERTEX + TEXCOORD_OFFSET, u, v);
         }
         
         /** Returns the texture coordinates of a vertex in the range 0-1. */
         public function getTexCoords(vertexID:int):Point
         {
-            var offset:int = getOffset(vertexID) + TEXCOORD_OFFSET;
+            var offset:int = vertexID * ELEMENTS_PER_VERTEX + TEXCOORD_OFFSET;
             return new Point(mData[offset], mData[offset+1]);
         }
         
@@ -165,7 +165,7 @@ package starling.utils
         public function translateVertex(vertexID:int, 
                                         deltaX:Number, deltaY:Number, deltaZ:Number=0.0):void
         {
-            var offset:int = getOffset(vertexID) + POSITION_OFFSET;
+            var offset:int = vertexID * ELEMENTS_PER_VERTEX + POSITION_OFFSET;
             mData[offset]   += deltaX;
             mData[offset+1] += deltaY;
             mData[offset+2] += deltaZ;
@@ -196,7 +196,7 @@ package starling.utils
             if (mPremultipliedAlpha) setAlpha(vertexID, getAlpha(vertexID) * alpha);
             else
             {
-                var offset:int = getOffset(vertexID) + COLOR_OFFSET + 3;
+                var offset:int =  vertexID * ELEMENTS_PER_VERTEX + COLOR_OFFSET + 3;
                 mData[offset] *= alpha;
             }
         }
@@ -246,5 +246,7 @@ package starling.utils
         
         /** The raw vertex data; not a copy! */
         public function get data():Vector.<Number> { return mData; }
+		
+		public function set _data(value:Vector.<Number>):void { mData = value; }
     }
 }

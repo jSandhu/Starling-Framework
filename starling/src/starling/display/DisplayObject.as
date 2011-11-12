@@ -98,7 +98,10 @@ package starling.display
     public class DisplayObject extends EventDispatcher
     {
         // members
-        protected var mMvpCopy:Matrix3D;
+        protected const mMvpCopy:Matrix3D = new Matrix3D();
+		protected const mAlphaVector:Vector.<Number> = new Vector.<Number>(4, true);
+		protected const mFullAlphaVector:Vector.<Number> = new Vector.<Number>(4, true);
+		
         private var mX:Number;
         private var mY:Number;
         private var mPivotX:Number;
@@ -120,7 +123,9 @@ package starling.display
             if (getQualifiedClassName(this) == "starling.display::DisplayObject")
                 throw new AbstractClassError();
 
-			mMvpCopy = new Matrix3D();
+			mAlphaVector[0] = 1.0; mAlphaVector[1] = 1.0; mAlphaVector[2] = 1.0; mAlphaVector[3] = 1.0; 
+			mFullAlphaVector[0] = 1.0; mFullAlphaVector[1] = 1.0; mFullAlphaVector[2] = 1.0; mFullAlphaVector[3] = 1.0;  
+			
             mX = mY = mPivotX = mPivotY = mRotation = 0.0;
             mScaleX = mScaleY = mAlpha = 1.0;            
             mVisible = mTouchable = true;
@@ -405,6 +410,10 @@ package starling.display
         public function set alpha(value:Number):void 
         { 
             mAlpha = Math.max(0.0, Math.min(1.0, value)); 
+			mAlphaVector[0] = mAlpha;
+			mAlphaVector[1] = mAlpha; 
+			mAlphaVector[2] = mAlpha; 
+			mAlphaVector[3] = mAlpha; 
         }
         
         /** The visibility of the object. An invisible object will be untouchable. */

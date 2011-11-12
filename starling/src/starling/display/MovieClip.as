@@ -209,8 +209,7 @@ package starling.display
                 {
                     if (mCurrentFrame != i)
                     {
-                        mCurrentFrame = i;
-                        updateCurrentFrame();
+						texture = mTextures[i];
                         playCurrentSound();
                     }
                     break;
