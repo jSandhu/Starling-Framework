@@ -16,6 +16,7 @@ package starling.display
     import flash.display3D.Context3D;
     import flash.display3D.Context3DProgramType;
     import flash.display3D.Context3DVertexBufferFormat;
+    import flash.display3D.Program3D;
     import flash.geom.Point;
     import flash.geom.Rectangle;
     
@@ -49,6 +50,7 @@ package starling.display
 		private var mTextureAsSubTexture:SubTexture;
         private var mSmoothing:String;
 		private var mAdjustedVertexData:VertexData;
+		private var mProgram:Program3D;
 		
         /** Creates a quad with a texture mapped onto it. */
         public function Image(texture:Texture)
@@ -77,7 +79,15 @@ package starling.display
             {
                 throw new ArgumentError("Texture cannot be null");                
             }
+			
+			setupProgram();
         }
+		
+		private function setupProgram():void
+		{
+			var program:String = getProgramName(mTexture.mipMapping, mTexture.repeat, mSmoothing);			
+			mProgram = Starling.current.getProgram(program);
+		}		
         
         /** Disposes vertex- and index-buffer, but does NOT dispose the texture! */
         public override function dispose():void
@@ -176,6 +186,8 @@ package starling.display
                 mSmoothing = value;
             else
                 throw new ArgumentError("Invalid smoothing mode: " + smoothing);
+			
+			setupProgram();
         }
         
         /** @inheritDoc */
@@ -184,7 +196,6 @@ package starling.display
             alpha *= this.alpha;
             
             var pma:Boolean = mTexture.premultipliedAlpha;
-            var programName:String = getProgramName(mTexture.mipMapping, mTexture.repeat, mSmoothing);
             var context:Context3D = Starling.context;
             
             if (context == null) throw new MissingContextError();
@@ -204,7 +215,7 @@ package starling.display
 
             support.setDefaultBlendFactors(pma);
             
-            context.setProgram(Starling.current.getProgram(programName));
+            context.setProgram(mProgram);
             context.setTextureAt(1, mTexture.base);
             context.setVertexBufferAt(0, mVertexBuffer, VertexData.POSITION_OFFSET, Context3DVertexBufferFormat.FLOAT_3); 
             context.setVertexBufferAt(1, mVertexBuffer, VertexData.COLOR_OFFSET,    Context3DVertexBufferFormat.FLOAT_4);
