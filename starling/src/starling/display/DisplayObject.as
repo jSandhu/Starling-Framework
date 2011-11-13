@@ -98,7 +98,6 @@ package starling.display
     public class DisplayObject extends EventDispatcher
     {
         // members
-        protected const mMvpCopy:Matrix3D = new Matrix3D();
 		protected const mAlphaVector:Vector.<Number> = new Vector.<Number>(4, true);
 		protected const mFullAlphaVector:Vector.<Number> = new Vector.<Number>(4, true);
 		

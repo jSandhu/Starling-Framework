@@ -27,15 +27,11 @@ package starling.core
     public class RenderSupport
     {
         // members        
-        
         private var mProjectionMatrix:Matrix3D;
-        private var mModelViewMatrix:Matrix3D;        
         private var mMatrixStack:MatrixStack;
-		
+		private var mMVPMatrix:Matrix3D;
 		private var mUsingPMA:Boolean = false;
 		private var mBlendModeInitialized:Boolean = false;	
-		private var mModelViewDirty:Boolean = true;
-		private var mMvpCopy:Matrix3D;
         
         // construction
         
@@ -44,8 +40,7 @@ package starling.core
         {
             mMatrixStack = new MatrixStack();
             mProjectionMatrix = new Matrix3D();
-            mModelViewMatrix = new Matrix3D();
-			mMvpCopy = new Matrix3D();
+			mMVPMatrix = new Matrix3D();
             
             loadIdentity();
             setOrthographicProjection(400, 300);
@@ -57,6 +52,10 @@ package starling.core
         public function setOrthographicProjection(width:Number, height:Number, 
                                                   near:Number=-1.0, far:Number=1.0):void
         {
+			// undo projection transform
+			mProjectionMatrix.invert();
+			mMVPMatrix.append(mProjectionMatrix);
+			
             var coords:Vector.<Number> = new <Number>[                
                 2.0/width, 0.0, 0.0, 0.0,
                 0.0, -2.0/height, 0.0, 0.0,
@@ -65,55 +64,51 @@ package starling.core
             ];
             
             mProjectionMatrix.copyRawDataFrom(coords);
+			mMVPMatrix.append(mProjectionMatrix);
         }
         
         /** Changes the modelview matrix to the identity matrix. */
         public function loadIdentity():void
         {
-            mModelViewMatrix.identity();
-			mModelViewDirty = true;
+			mMVPMatrix.identity();
+			mMVPMatrix.append(mProjectionMatrix);
         }
         
         /** Prepends a translation to the modelview matrix. */
         public function translateMatrix(dx:Number, dy:Number, dz:Number=0):void
         {
-            mModelViewMatrix.prependTranslation(dx, dy, dz);
-			mModelViewDirty = true;
+			mMVPMatrix.prependTranslation(dx, dy, dz);
         }
         
         /** Prepends a rotation (angle in radians) to the modelview matrix. */
         public function rotateMatrix(angle:Number, axis:Vector3D=null):void
         {
-            mModelViewMatrix.prependRotation(angle / Math.PI * 180.0, 
-                                             axis == null ? Vector3D.Z_AXIS : axis);
-			mModelViewDirty = true;
+			mMVPMatrix.prependRotation(angle / Math.PI * 180.0, 
+				axis == null ? Vector3D.Z_AXIS : axis);
         }
         
         /** Prepends an incremental scale change to the modelview matrix. */
         public function scaleMatrix(sx:Number, sy:Number, sz:Number=1.0):void
         {
-            mModelViewMatrix.prependScale(sx, sy, sz);  
-			mModelViewDirty = true;
+			mMVPMatrix.prependScale(sx, sy, sz);  
         }
         
         /** Prepends translation, scale and rotation of an object to the modelview matrix. */
         public function transformMatrix(object:DisplayObject):void
         {
-            transformMatrixForObject(mModelViewMatrix, object);  
-			mModelViewDirty = true;
+			transformMatrixForObject(mMVPMatrix, object);  
         }
         
         /** Pushes the current modelview matrix to a stack from which it can be restored later. */
         public function pushMatrix():void
         {
-            mMatrixStack.pushCopy(mModelViewMatrix);
+			mMatrixStack.pushCopy(mMVPMatrix);
         }
         
         /** Restores the modelview matrix that was last pushed to the stack. */
         public function popMatrix():void
         {
-            mMatrixStack.popCopy(mModelViewMatrix);
-			mModelViewDirty = true;
+			mMatrixStack.popCopy(mMVPMatrix);
         }
         
         /** Empties the matrix stack, resets the modelview matrox to the identity matrix. */
@@ -124,26 +119,11 @@ package starling.core
             
             loadIdentity();
         }
-        
-		/** Gets a copy of the mvp matrix and re-calculates it only if it was changed. */
-		public function getMvpMatrixCopy(output:Matrix3D):void
-		{
-			if (mModelViewDirty)
-			{
-				mMvpCopy.copyFrom(mModelViewMatrix);
-				mMvpCopy.append(mProjectionMatrix);
-				mModelViewDirty = false;
-			}
-			output.copyFrom(mMvpCopy);			
-		}
 		
         /** Calculates the product of modelview and projection matrix. */
         public function get mvpMatrix():Matrix3D
         {
-            var mvpMatrix:Matrix3D = new Matrix3D();
-            mvpMatrix.append(mModelViewMatrix);
-            mvpMatrix.append(mProjectionMatrix);
-            return mvpMatrix;
+			return mMVPMatrix;
         }
         
         /** Prepends translation, scale and rotation of an object to a custom matrix. */

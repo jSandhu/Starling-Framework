@@ -113,8 +113,7 @@ package starling.display
             context.setVertexBufferAt(0, mVertexBuffer, VertexData.POSITION_OFFSET, Context3DVertexBufferFormat.FLOAT_3); 
             context.setVertexBufferAt(1, mVertexBuffer, VertexData.COLOR_OFFSET,    Context3DVertexBufferFormat.FLOAT_4);
 			
-			support.getMvpMatrixCopy(mMvpCopy);
-            context.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, mMvpCopy, true);            
+            context.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, support.mvpMatrix, true);            
             context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 0, mAlphaVector, 1);
             
             if (mTexture)

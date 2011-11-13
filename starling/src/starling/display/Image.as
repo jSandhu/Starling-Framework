@@ -246,8 +246,7 @@ package starling.display
             context.setVertexBufferAt(1, mVertexBuffer, VertexData.COLOR_OFFSET,    Context3DVertexBufferFormat.FLOAT_4);
             context.setVertexBufferAt(2, mVertexBuffer, VertexData.TEXCOORD_OFFSET, Context3DVertexBufferFormat.FLOAT_2);
 			
-			support.getMvpMatrixCopy(mMvpCopy);
-            context.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, mMvpCopy, true);            
+            context.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, support.mvpMatrix, true);            
             context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 0, alphaVect, 1);
             context.drawTriangles(mIndexBuffer, 0, 2);
             
