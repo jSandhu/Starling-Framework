@@ -294,15 +294,18 @@ package starling.display
         }
         
         /** @private */
+		private var mListeners:Vector.<DisplayObject> = new <DisplayObject>[];
         internal override function dispatchEventOnChildren(event:Event):void 
         { 
             // the event listeners might modify the display tree, which could make the loop crash. 
             // thus, we collect them in a list and iterate over that list instead.
             
-            var listeners:Vector.<DisplayObject> = new <DisplayObject>[];
+            var listeners:Vector.<DisplayObject> = mListeners;
+			listeners.length = 0;
             getChildEventListeners(this, event.type, listeners);
-            for each (var listener:DisplayObject in listeners)
-                listener.dispatchEvent(event);
+			var len:uint = listeners.length;
+			for (var i:uint = 0; i < len; i++)
+				listeners[i].dispatchEvent(event);
         }
         
         private function getChildEventListeners(object:DisplayObject, eventType:String, 

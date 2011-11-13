@@ -96,7 +96,10 @@ package starling.core
         /** Prepends translation, scale and rotation of an object to the modelview matrix. */
         public function transformMatrix(object:DisplayObject):void
         {
-			transformMatrixForObject(mMVPMatrix, object);  
+			mMVPMatrix.prependTranslation(object.x, object.y, 0.0);
+			mMVPMatrix.prependRotation(object.rotation / Math.PI * 180.0, Vector3D.Z_AXIS);
+			mMVPMatrix.prependScale(object.scaleX, object.scaleY, 1.0);
+			mMVPMatrix.prependTranslation(-object.pivotX, -object.pivotY, 0.0);			
         }
         
         /** Pushes the current modelview matrix to a stack from which it can be restored later. */

@@ -18,6 +18,7 @@ package starling.display
     import starling.core.RenderSupport;
     import starling.core.Starling;
     import starling.errors.MissingContextError;
+    import starling.events.StarlingChangedEvent;
     import starling.textures.TextureSmoothing;
     import starling.utils.VertexData;
     
@@ -40,6 +41,8 @@ package starling.display
 		private var mMvpCopy:Matrix3D;
 		private var mProgram:Program3D;
 		
+		private var mContext:Context3D;
+		
         public function QuadGroup(texture:TextureBase, smoothing:String, repeat:Boolean, 
                                   mipmap:Boolean, premultipliedAlpha:Boolean)
         {
@@ -53,7 +56,17 @@ package starling.display
 			mMvpCopy = new Matrix3D();
 			
 			setupProgram();
+			
+			mContext = Starling.context;
+			Starling.current.addEventListener(StarlingChangedEvent.CHANGED, onStarlingChanged);
         }
+		
+		private function onStarlingChanged(e:StarlingChangedEvent):void
+		{
+			e.oldStarling.removeEventListener(StarlingChangedEvent.CHANGED, onStarlingChanged);
+			e.newStarling.addEventListener(StarlingChangedEvent.CHANGED, onStarlingChanged);
+			mContext = e.newStarling.context;
+		}		
 		
 		private function setupProgram():void
 		{
@@ -79,7 +92,7 @@ package starling.display
         
         public function finish():void
         {
-            var context:Context3D = Starling.context;
+            var context:Context3D = mContext;
             if (context == null) throw new MissingContextError();
             
             mIndices.fixed = true; // no more changes allowed
@@ -93,7 +106,7 @@ package starling.display
         
         public function render(support:RenderSupport, alpha:Number):void
         {
-            var context:Context3D = Starling.context;
+            var context:Context3D = mContext;
             if (context == null) throw new MissingContextError();
             
             var pma:Boolean = mVertexData.premultipliedAlpha;

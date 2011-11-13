@@ -25,6 +25,7 @@ package starling.display
     import starling.core.RenderSupport;
     import starling.core.Starling;
     import starling.errors.MissingContextError;
+    import starling.events.StarlingChangedEvent;
     import starling.utils.VertexData;
 
     /** A Quad represents a rectangle with a uniform color or a color gradient.
@@ -57,6 +58,9 @@ package starling.display
         
         /** The index buffer object used to render the quad. */
         protected var mIndexBuffer:IndexBuffer3D;
+		
+		protected var mContext:Context3D;
+		protected var mCurrentStarling:Starling;
         
         /** Creates a quad with a certain size and color. */
         public function Quad(width:Number, height:Number, color:uint=0xffffff)
@@ -67,7 +71,19 @@ package starling.display
             mVertexData.setPosition(2, 0.0, height);
             mVertexData.setPosition(3, width, height);            
             mVertexData.setUniformColor(color);
+			
+			mContext = Starling.context;
+			mCurrentStarling = Starling.current;
+			Starling.current.addEventListener(StarlingChangedEvent.CHANGED, onStarlingChanged);
         }
+		
+		private function onStarlingChanged(e:StarlingChangedEvent):void
+		{
+			e.oldStarling.removeEventListener(StarlingChangedEvent.CHANGED, onStarlingChanged);
+			e.newStarling.addEventListener(StarlingChangedEvent.CHANGED, onStarlingChanged);
+			mContext = e.newStarling.context;
+			mCurrentStarling = e.newStarling;
+		}
         
         /** Disposes vertex- and index-buffer of the quad. */
         public override function dispose():void
@@ -169,7 +185,7 @@ package starling.display
             alpha *= this.alpha;
             
 			mAlphaVector[0] = alpha; mAlphaVector[1] = alpha; mAlphaVector[2] = alpha; mAlphaVector[3] = alpha;
-            var context:Context3D = Starling.context;
+            var context:Context3D = mContext;
             
             if (context == null) throw new MissingContextError();
             if (mVertexBuffer == null) createVertexBuffer();
@@ -177,7 +193,7 @@ package starling.display
             
             support.setDefaultBlendFactors(true);
             
-            context.setProgram(Starling.current.getProgram(PROGRAM_NAME));
+            context.setProgram(mCurrentStarling.getProgram(PROGRAM_NAME));
             context.setVertexBufferAt(0, mVertexBuffer, VertexData.POSITION_OFFSET, Context3DVertexBufferFormat.FLOAT_3); 
             context.setVertexBufferAt(1, mVertexBuffer, VertexData.COLOR_OFFSET,    Context3DVertexBufferFormat.FLOAT_4);
 			
@@ -193,7 +209,7 @@ package starling.display
         protected function createVertexBuffer():void
         {
             if (mVertexBuffer == null) 
-                mVertexBuffer = Starling.context.createVertexBuffer(4, VertexData.ELEMENTS_PER_VERTEX);
+                mVertexBuffer = mContext.createVertexBuffer(4, VertexData.ELEMENTS_PER_VERTEX);
                 
             mVertexBuffer.uploadFromVector(vertexData.data, 0, 4);
         }
@@ -202,7 +218,7 @@ package starling.display
         protected function createIndexBuffer():void
         {
             if (mIndexBuffer == null) 
-                mIndexBuffer = Starling.context.createIndexBuffer(6);
+                mIndexBuffer = mContext.createIndexBuffer(6);
             
             mIndexBuffer.uploadFromVector(Vector.<uint>([0, 1, 2, 1, 3, 2]), 0, 6);
         }

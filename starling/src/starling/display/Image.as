@@ -221,7 +221,7 @@ package starling.display
             alpha *= this.alpha;
             
             var pma:Boolean = mTexture.premultipliedAlpha;
-            var context:Context3D = Starling.context;
+            var context:Context3D = mContext;
             
             if (context == null) throw new MissingContextError();
             if (mVertexBuffer == null) createVertexBuffer();

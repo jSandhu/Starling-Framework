@@ -36,7 +36,9 @@ package starling.core
     import starling.display.Image;
     import starling.display.Quad;
     import starling.display.Stage;
+    import starling.events.EventDispatcher;
     import starling.events.ResizeEvent;
+    import starling.events.StarlingChangedEvent;
     import starling.events.TouchPhase;
     import starling.events.TouchProcessor;
     
@@ -101,7 +103,7 @@ package starling.core
      *  this feature by enabling the <code>simulateMultitouch</code> property.</p>
      *
      */ 
-    public class Starling
+    public class Starling extends EventDispatcher
     {
         /** The version of the Starling framework. */
         public static const VERSION:String = "0.9";
@@ -297,6 +299,8 @@ package starling.core
         /** Make this Starling instance the <code>current</code> one. */
         public function makeCurrent():void
         {
+			if (sCurrent)
+				sCurrent.dispatchEvent(new StarlingChangedEvent(StarlingChangedEvent.CHANGED, sCurrent, this));
             sCurrent = this;
         }
         
