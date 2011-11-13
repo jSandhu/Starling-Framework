@@ -53,6 +53,7 @@ package starling.display
      * */
     public class Stage extends DisplayObjectContainer
     {
+		private const mEnterFrameEvent:EnterFrameEvent = new EnterFrameEvent(Event.ENTER_FRAME, 0);
         private var mWidth:int;
         private var mHeight:int;
         private var mColor:uint;
@@ -68,7 +69,8 @@ package starling.display
         /** @inheritDoc */
         public function advanceTime(passedTime:Number):void
         {
-            dispatchEventOnChildren(new EnterFrameEvent(Event.ENTER_FRAME, passedTime));
+			mEnterFrameEvent.passedTime = passedTime;
+            dispatchEventOnChildren(mEnterFrameEvent);
         }
 
         /** Returns the object that is found topmost beneath a point in stage coordinates, or  

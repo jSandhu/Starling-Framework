@@ -22,16 +22,13 @@ package starling.events
         /** Event type for a display object that is entering a new frame. */
         public static const ENTER_FRAME:String = "enterFrame";
         
-        private var mPassedTime:Number;
+        public var passedTime:Number;
         
         /** Creates an enter frame event with the passed time. */
         public function EnterFrameEvent(type:String, passedTime:Number, bubbles:Boolean=false)
         {
             super(type, bubbles);
-            mPassedTime = passedTime;
+            this.passedTime = passedTime;
         }
-        
-        /** The time that has passed since the last frame (in seconds). */
-        public function get passedTime():Number { return mPassedTime; }
     }
 }
