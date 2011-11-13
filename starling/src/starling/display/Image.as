@@ -19,6 +19,7 @@ package starling.display
     import flash.display3D.Program3D;
     import flash.geom.Point;
     import flash.geom.Rectangle;
+    import flash.utils.Dictionary;
     
     import starling.core.RenderSupport;
     import starling.core.Starling;
@@ -52,6 +53,8 @@ package starling.display
 		private var mAdjustedVertexData:VertexData;
 		private var mProgram:Program3D;
 		
+		private var mAdjustedVertexDataByFrame:Dictionary;
+		
         /** Creates a quad with a texture mapped onto it. */
         public function Image(texture:Texture)
         {
@@ -79,7 +82,7 @@ package starling.display
             {
                 throw new ArgumentError("Texture cannot be null");                
             }
-			
+			mAdjustedVertexDataByFrame = new Dictionary();
 			setupProgram();
         }
 		
@@ -92,6 +95,11 @@ package starling.display
         /** Disposes vertex- and index-buffer, but does NOT dispose the texture! */
         public override function dispose():void
         {
+			for (var frame:Object in mAdjustedVertexDataByFrame) 
+			{
+				mAdjustedVertexDataByFrame[frame] = null;
+				delete mAdjustedVertexDataByFrame[frame];
+			}
             super.dispose();
         }
         
@@ -117,16 +125,30 @@ package starling.display
         /** Returns a 'VertexData' object with the raw data of the object required for rendering.
          *  The texture coordinates are already in their refined format. */ 
 		override public function get vertexData():VertexData {
+			
+			if (!frame && !mTextureAsSubTexture) return mVertexData;
+			
+			// if adjusted vertex data for the frame has been calculated, return cached
+			var frame:Rectangle = mTexture.frame;
+			if (frame) 
+			{
+				if (mAdjustedVertexDataByFrame[frame]) 
+				{
+					return mAdjustedVertexDataByFrame[frame];
+				}
+			}
+		
+			var adjustedVertexData:VertexData = mVertexData.clone(); 				
 			var sourceData:Vector.<Number> = mVertexData.data;
-			var destData:Vector.<Number> = mAdjustedVertexData.data;
+			var destData:Vector.<Number> = adjustedVertexData.data;
 			var len:uint = sourceData.length;
 			var i:uint;
 			
-			for (i = 0; i < len; i++) {
+			for (i = 0; i < len; i++) 
+			{
 				destData[i] = sourceData[i];
 			}
-			
-			var frame:Rectangle = mTexture.frame;
+
 			if (frame)
 			{
 				var deltaRight:Number  = frame.width  + frame.x - mTexture.width;
@@ -145,18 +167,21 @@ package starling.display
 				destData[28] += -deltaBottom;
 			}
 			
-			if (mTextureAsSubTexture) {
+			if (mTextureAsSubTexture) 
+			{
 				var numVertices:int = mVertexData.numVertices;
-				var mRootClipping:Rectangle = mTextureAsSubTexture.rootClipping; 
-				
-				for (i = 0; i<numVertices; ++i) {	
+				var rootClipping:Rectangle = mTextureAsSubTexture.rootClipping; 
+
+				for (i = 0; i<numVertices; ++i) 
+				{	
 					// set texture coordinates
-					destData[i * 9 + 7]	= mRootClipping.x + sourceData[i * 9 + 7] * mRootClipping.width
-					destData[i * 9 + 8]	= mRootClipping.y + sourceData[i * 9 + 8] * mRootClipping.height
+					destData[i * 9 + 7]	= rootClipping.x + sourceData[i * 9 + 7] * rootClipping.width
+					destData[i * 9 + 8]	= rootClipping.y + sourceData[i * 9 + 8] * rootClipping.height
 				}			
 			}
-			
-			return mAdjustedVertexData;
+
+			mAdjustedVertexDataByFrame[frame] = adjustedVertexData;
+			return adjustedVertexData;
 		}
         
         /** The texture that is displayed on the quad. */
