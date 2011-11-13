@@ -41,6 +41,8 @@ package starling.display
      */    
     public class MovieClip extends Image implements IAnimatable
     {
+		private const mMovieCompletedEvent:Event = new Event(Event.MOVIE_COMPLETED);
+		
         private var mTextures:Vector.<Texture>;
         private var mSounds:Vector.<Sound>;
         private var mDurations:Vector.<Number>;
@@ -193,36 +195,45 @@ package starling.display
         /** @inheritDoc */
         public function advanceTime(passedTime:Number):void
         {
-            if (mLoop && mCurrentTime == mTotalTime) mCurrentTime = 0.0;
-            if (!mPlaying || passedTime == 0.0 || mCurrentTime == mTotalTime) return;
+			var currentTime:Number = mCurrentTime;
+			var totalTime:Number = mTotalTime;
+			
+            if (mLoop && currentTime == totalTime) currentTime = 0.0;
+            if (!mPlaying || passedTime == 0.0 || currentTime == totalTime) return;
             
-            var i:int = 0;
             var durationSum:Number = 0.0;
-            var previousTime:Number = mCurrentTime;
-            var restTime:Number = mTotalTime - mCurrentTime;
+            var previousTime:Number = currentTime;
+            var restTime:Number = totalTime - currentTime;
             var carryOverTime:Number = passedTime > restTime ? passedTime - restTime : 0.0;
-            mCurrentTime = Math.min(mTotalTime, mCurrentTime + passedTime);
+			currentTime = Math.min(totalTime, currentTime + passedTime);
+			mCurrentTime = currentTime;
             
-            for each (var duration:Number in mDurations)
+			var i:uint;
+			var durations:Vector.<Number> = mDurations;
+			var len:uint = mDurations.length;
+			var currentFrame:int = mCurrentFrame;
+			var duration:Number;
+			var textures:Vector.<Texture> = mTextures;
+            for (i = 0; i < len; i++)
             {
-                if (durationSum + duration >= mCurrentTime)
+				duration = durations[i];
+                if (durationSum + duration >= currentTime)
                 {
-                    if (mCurrentFrame != i)
+                    if (currentFrame != i)
                     {
-						texture = mTextures[i];
+						texture = textures[i];
                         playCurrentSound();
                     }
                     break;
                 }
-                
-                ++i;
+				
                 durationSum += duration;
             }
             
-            if (previousTime < mTotalTime && mCurrentTime == mTotalTime &&
+            if (previousTime < totalTime && currentTime == totalTime &&
                 hasEventListener(Event.MOVIE_COMPLETED))
             {
-                dispatchEvent(new Event(Event.MOVIE_COMPLETED));
+                dispatchEvent(mMovieCompletedEvent);
             }
                 
             advanceTime(carryOverTime);
