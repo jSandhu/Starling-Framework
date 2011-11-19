@@ -100,6 +100,11 @@ package starling.display
 				mAdjustedVertexDataByFrame[frame] = null;
 				delete mAdjustedVertexDataByFrame[frame];
 			}
+			
+			if (mTexture) {
+				mTexture.dispose();
+			}
+			
             super.dispose();
         }
         

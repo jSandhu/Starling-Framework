@@ -43,6 +43,11 @@ package starling.textures
 			mWidth = mParent.width * mClipping.width;
 			mHeight = mParent.height * mClipping.height;
         }
+		
+		override public function dispose():void {
+			mParent.dispose();
+			super.dispose();
+		}
         
         /** @inheritDoc */
         public override function adjustVertexData(vertexData:VertexData):VertexData
