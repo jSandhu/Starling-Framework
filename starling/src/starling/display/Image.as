@@ -101,10 +101,6 @@ package starling.display
 				delete mAdjustedVertexDataByFrame[frame];
 			}
 			
-			if (mTexture) {
-				mTexture.dispose();
-			}
-			
             super.dispose();
         }
         
