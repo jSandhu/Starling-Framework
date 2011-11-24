@@ -73,6 +73,7 @@ package starling.textures
     {
         private var mFrame:Rectangle;
         private var mRepeat:Boolean;
+		private var mDisposed:Boolean = false;
         
         /** @private */
         public function Texture()
@@ -84,8 +85,9 @@ package starling.textures
         }
         
         /** Disposes the underlying texture data. */
-        public function dispose():void
-        { }
+        public function dispose():void { mDisposed = true; }
+		
+		public function get disposed():Boolean { return mDisposed; }
         
         /** Creates a texture object from a bitmap.*/
         public static function fromBitmap(data:Bitmap, generateMipMaps:Boolean=true,
