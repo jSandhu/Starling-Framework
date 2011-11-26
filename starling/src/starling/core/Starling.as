@@ -193,12 +193,36 @@ package starling.core
         /** Disposes Shader programs and render context. */
         public function dispose():void
         {
+			stop();
+			removeAllEventListeners();
+			
+			if (sCurrent == this) sCurrent = null;			
+			
             for each (var program:Program3D in mPrograms)
                 program.dispose();
-            
+				
             if (mContext) mContext.dispose();
             if (mTouchProcessor) mTouchProcessor.dispose();
         }
+		
+		private function removeAllEventListeners():void {
+			// register touch/mouse event handlers            
+			var touchEventTypes:Array = Multitouch.supportsTouchEvents ?
+				[ TouchEvent.TOUCH_BEGIN, TouchEvent.TOUCH_MOVE, TouchEvent.TOUCH_END ] :
+				[ MouseEvent.MOUSE_DOWN, MouseEvent.MOUSE_MOVE, MouseEvent.MOUSE_UP ];            
+			
+			for each (var touchEventType:String in touchEventTypes)
+			mStage.removeEventListener(touchEventType, onTouch);
+			
+			// register other event handlers
+			mStage.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
+			mStage.removeEventListener(KeyboardEvent.KEY_DOWN, onKey);
+			mStage.removeEventListener(KeyboardEvent.KEY_UP, onKey);
+			mStage.removeEventListener(Event.RESIZE, onResize);
+			
+			mStage3D.removeEventListener(Event.CONTEXT3D_CREATE, onContextCreated);
+			mStage3D.removeEventListener(ErrorEvent.ERROR, onStage3DError);			
+		}		
         
         // functions
         
